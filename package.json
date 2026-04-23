@@ -1,10 +1,5 @@
 {
   "name": "golf-tournament",
   "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "build": "node scripts/inject-env.js",
-    "dev": "vercel dev",
-    "deploy": "vercel deploy --prod"
-  }
+  "private": true
 }
