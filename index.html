@@ -1,0 +1,1056 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>2026 Masters · Goose Creek · Live</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0E0E0C" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #F4F4F1;
+    --surface: #FFFFFF;
+    --surface-alt: #EAEAE4;
+    --ink: #0A0A08;
+    --mute: #6B6B65;
+    --line: rgba(0,0,0,0.08);
+    --accent: #FF4D1F;
+    --accent-ink: #FFFFFF;
+    --good: #0F8F5A;
+    --bad: #B22222;
+    --f-head: 'Space Grotesk', system-ui, sans-serif;
+    --f-body: 'Inter', system-ui, sans-serif;
+    --f-num: 'Space Grotesk', ui-monospace, monospace;
+    --nav-h: calc(62px + env(safe-area-inset-bottom));
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--f-body);
+    background: var(--bg); color: var(--ink);
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  .app {
+    max-width: 520px;
+    margin: 0 auto;
+    min-height: 100dvh;
+    background: var(--bg);
+    position: relative;
+    padding-bottom: var(--nav-h);
+  }
+  @media (min-width: 540px) {
+    body { background: #e7e4dc; }
+    .app { box-shadow: 0 0 0 1px rgba(0,0,0,0.05); }
+  }
+
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; cursor: pointer; }
+
+  /* Top bar */
+  .topbar {
+    position: sticky; top: 0; z-index: 40;
+    background: var(--bg);
+    padding: 12px 20px calc(12px + env(safe-area-inset-top)) 20px;
+    padding-top: max(12px, env(safe-area-inset-top));
+    display: flex; justify-content: space-between; align-items: center;
+    backdrop-filter: saturate(180%) blur(10px);
+    -webkit-backdrop-filter: saturate(180%) blur(10px);
+    background: rgba(244,244,241,0.85);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .topbar.scrolled { border-bottom-color: var(--line); }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 30px; height: 30px; background: var(--accent); color: var(--accent-ink);
+    border-radius: 9px; display: flex; align-items: center; justify-content: center;
+    font-family: var(--f-head); font-weight: 700; font-size: 14px;
+  }
+  .brand-name { font-family: var(--f-head); font-weight: 600; font-size: 14px; }
+  .live-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 11px; background: var(--surface); border-radius: 99px;
+    border: 1px solid var(--line);
+    font-family: var(--f-head); font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+  }
+  .live-dot {
+    width: 6px; height: 6px; border-radius: 99px; background: var(--accent);
+    animation: pulse-dot 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse-dot { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
+
+  /* Bottom nav */
+  .tabbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+    display: flex; justify-content: center;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom)) 12px;
+    pointer-events: none;
+  }
+  .tabbar-inner {
+    pointer-events: auto;
+    display: flex; gap: 2px; padding: 5px; width: 100%; max-width: 440px;
+    background: #0E0E0C; border-radius: 999px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  }
+  .tab {
+    flex: 1; padding: 11px 0; border: none; background: transparent;
+    font-family: var(--f-head); font-weight: 600; font-size: 11px;
+    color: #9A9A93; border-radius: 999px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .tab.active { background: var(--accent); color: var(--accent-ink); }
+
+  /* Headings */
+  .h-hero { font-family: var(--f-head); font-weight: 700; font-size: clamp(56px, 18vw, 82px); line-height: 0.88; letter-spacing: -0.03em; }
+  .h-page { font-family: var(--f-head); font-weight: 700; font-size: clamp(40px, 12vw, 54px); line-height: 1; letter-spacing: -0.03em; }
+  .h-section { font-family: var(--f-head); font-weight: 700; font-size: 26px; letter-spacing: -0.03em; }
+  .mute { color: var(--mute); }
+  .accent { color: var(--accent); }
+  .num { font-family: var(--f-num); font-variant-numeric: tabular-nums; letter-spacing: -0.04em; font-weight: 700; }
+
+  /* Chip */
+  .chips { display: flex; gap: 8px; overflow-x: auto; padding: 0 20px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip {
+    padding: 8px 14px; border-radius: 99px;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line);
+    font-family: var(--f-head); font-weight: 600; font-size: 12px;
+    white-space: nowrap; transition: all 0.15s;
+  }
+  .chip.active { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+
+  /* Cards */
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 18px;
+    padding: 16px;
+  }
+  .card.dark { background: #0E0E0C; color: #fff; border: none; }
+
+  /* Animations */
+  @keyframes pop { 0% { transform: scale(0.85); opacity: 0; } 60% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes rise { 0% { transform: translateY(12px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes confetti { 0% { transform: translate(0,0) rotate(0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) rotate(var(--tr)); opacity: 0; } }
+  .rise { animation: rise 0.45s cubic-bezier(0.2,0.8,0.2,1) both; }
+  .pop { animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+  .spin { animation: spin 0.9s linear infinite; }
+  .confetti-piece {
+    position: absolute; width: 6px; height: 10px; top: 50%; left: 50%;
+    animation: confetti 0.9s cubic-bezier(0.2,0.6,0.4,1) forwards;
+    pointer-events: none;
+  }
+
+  /* Page transitions */
+  .route { animation: rise 0.3s cubic-bezier(0.2,0.8,0.2,1) both; }
+
+  /* Leaderboard row */
+  .lb-row {
+    display: flex; gap: 12px; align-items: center;
+    padding: 14px 12px; border-radius: 16px;
+    background: var(--surface); border: 1px solid var(--line);
+    margin-bottom: 6px;
+    transition: background 0.6s, border-color 0.6s;
+  }
+  .lb-row.pulse {
+    background: rgba(255,77,31,0.10);
+    border-color: var(--accent);
+  }
+  .lb-pos {
+    width: 38px; min-width: 38px; height: 38px; border-radius: 10px;
+    background: var(--surface-alt); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--f-head); font-weight: 700; font-size: 13px;
+  }
+  .lb-pos.first { background: var(--accent); color: var(--accent-ink); }
+  .lb-bar { height: 3px; flex: 1; background: var(--surface-alt); border-radius: 99px; overflow: hidden; }
+  .lb-bar > div { height: 100%; background: var(--accent); transition: width 0.6s cubic-bezier(0.2,0.8,0.2,1); }
+
+  /* Score entry buttons */
+  .score-btn {
+    flex: 1; aspect-ratio: 1; border: none; border-radius: 14px;
+    background: var(--surface-alt); color: var(--ink);
+    font-family: var(--f-num); font-size: 22px; font-weight: 700;
+    font-variant-numeric: tabular-nums; letter-spacing: -0.04em;
+    transition: transform 0.08s, background 0.15s, box-shadow 0.15s;
+  }
+  .score-btn:active { transform: scale(0.92); }
+  .score-btn.selected {
+    background: var(--accent); color: var(--accent-ink);
+    box-shadow: 0 6px 18px rgba(255,77,31,0.35);
+  }
+
+  /* Scorecard cell */
+  .sc-cell {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    border-radius: 10px; font-family: var(--f-num); font-size: 14px; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    background: var(--surface); color: var(--mute); border: 1px solid var(--line);
+  }
+  .sc-cell.par { background: var(--surface-alt); color: var(--ink); border: none; }
+  .sc-cell.birdie { background: var(--good); color: #fff; border: none; }
+  .sc-cell.eagle { background: var(--accent); color: var(--accent-ink); border: none; }
+  .sc-cell.bogey { background: #F4DAD2; color: #8A2A1C; border: none; }
+  .sc-cell.double { background: var(--bad); color: #fff; border: none; }
+
+  /* Sign-in */
+  .input {
+    width: 100%; padding: 16px 18px; border-radius: 14px; border: 1.5px solid var(--line);
+    font-family: var(--f-head); font-size: 18px; font-weight: 500; background: var(--surface);
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .input:focus { outline: none; border-color: var(--accent); }
+
+  /* CTA */
+  .btn {
+    width: 100%; padding: 15px 0; border: none; border-radius: 99px;
+    background: var(--accent); color: var(--accent-ink);
+    font-family: var(--f-head); font-size: 14px; font-weight: 700;
+    box-shadow: 0 8px 22px rgba(255,77,31,0.35);
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn.ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); box-shadow: none; }
+
+  /* Container paddings */
+  .pad { padding: 0 20px; }
+  .gap-1 { margin-bottom: 8px; } .gap-2 { margin-bottom: 14px; } .gap-3 { margin-bottom: 20px; } .gap-4 { margin-bottom: 28px; }
+
+  /* Footer (hidden behind tabbar but reachable on very tall pages) */
+  .end-pad { height: 40px; }
+
+  /* Utility: sr-only */
+  .sr { position: absolute; clip: rect(0 0 0 0); width: 1px; height: 1px; overflow: hidden; }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+// ─────── DATA ───────
+const PARS = [4,4,3,5,4,4,3,5,4, 4,3,4,5,4,4,4,3,5];
+const YARDS = [412,445,178,524,401,462,188,551,395, 428,165,418,538,432,476,408,195,542];
+const HOLE_NAMES = [
+  'Opening','The Arroyo','Short Iron','Eagle Run','Dogleg Right',
+  'The Crest','Island','Double Dog','Amen Turn',
+  'Back Nine','The Fall','Long Par 4','Reachable','The Grove',
+  'Fairway Bunker','Into the Wind','Postage Stamp','Home'
+];
+const INITIAL_HOLES = 12;
+function makeScores(seed, played) {
+  const s = new Array(18).fill(null);
+  for (let i = 0; i < played; i++) s[i] = PARS[i] + (seed[i] ?? 0);
+  return s;
+}
+const PLAYERS_SEED = [
+  { id:'sh',  name:'Scott Hitomi',  group:1, hcp:8,  seed:[0,0,-1,1,0,0,0,1,-1, 0,0,1,0,0,1,0,0,-1] },
+  { id:'jy',  name:'Justin Yun',    group:1, hcp:14, seed:[1,0,1,0,2,0,1,1,0,   1,0,0,1,0,1,1,1,1] },
+  { id:'jp',  name:'Joe Park',      group:1, hcp:18, seed:[1,2,1,0,1,1,0,2,1,   0,1,1,1,1,2,1,0,1] },
+  { id:'jk',  name:'James Kim',     group:2, hcp:4,  seed:[0,-1,0,-1,0,0,-1,0,0, 0,0,-1,0,0,-1,0,0,0] },
+  { id:'sc',  name:'Steve Choi',    group:2, hcp:12, seed:[0,1,0,1,0,0,1,0,0,    1,0,0,0,1,0,0,1,-1] },
+  { id:'mk',  name:'Mike Kwon',     group:2, hcp:10, seed:[1,0,0,1,0,1,0,0,1,    0,1,0,0,1,0,1,0,0] },
+  { id:'jch', name:'James Choi',    group:3, hcp:22, seed:[2,1,1,2,1,2,1,2,1,    1,1,2,1,2,1,1,1,2] },
+  { id:'jc2', name:'Jim Chung',     group:3, hcp:16, seed:[1,1,0,1,1,0,1,1,0,    1,0,1,1,0,1,0,1,1] },
+  { id:'bk',  name:'Brian Ko',      group:3, hcp:20, seed:[1,2,1,1,2,1,0,2,1,    2,1,1,2,1,1,2,0,1] },
+  { id:'sb',  name:'Sam Baik',      group:4, hcp:11, seed:[0,1,-1,1,1,0,0,1,0,   1,-1,1,0,0,1,1,0,0] },
+  { id:'dj',  name:'Daniel Johung', group:4, hcp:7,  seed:[1,0,0,0,1,0,0,1,-1,   0,0,1,0,1,0,1,0,0] },
+  { id:'ty',  name:'Tim Yoo',       group:4, hcp:15, seed:[1,1,0,0,1,2,0,1,1,    0,2,0,1,1,0,1,1,1] },
+];
+// Group codes match the admin's 4-char code scheme (ABCDEFGHJKLMNPQRSTUVWXYZ23456789).
+// In Supabase this is a row on the groups table — regenerating from admin writes a new code.
+const GROUPS = {
+  1: { code: 'GF2P', tee: '8:10 AM' },
+  2: { code: 'MK7A', tee: '8:22 AM' },
+  3: { code: 'RB9X', tee: '8:34 AM' },
+  4: { code: 'QN4H', tee: '8:46 AM' },
+};
+function buildPlayers() {
+  return PLAYERS_SEED.map(p => ({ ...p, scores: makeScores(p.seed, INITIAL_HOLES) }));
+}
+function parThru(h) { let s = 0; for (let i = 0; i < h; i++) s += PARS[i]; return s; }
+function sumScores(scores) {
+  let gross = 0, holes = 0;
+  for (const v of scores) if (v != null) { gross += v; holes++; }
+  return { gross, holes };
+}
+function fmtRel(rel) { return rel === 0 ? 'E' : rel > 0 ? `+${rel}` : `${rel}`; }
+function thruLabel(h) { return h === 0 ? '—' : h === 18 ? 'F' : String(h); }
+function scoreLabel(s, par) {
+  if (s == null) return '';
+  const d = s - par;
+  if (d <= -3) return 'Albatross';
+  if (d === -2) return 'Eagle';
+  if (d === -1) return 'Birdie';
+  if (d === 0) return 'Par';
+  if (d === 1) return 'Bogey';
+  if (d === 2) return 'Double';
+  return `+${d}`;
+}
+function scoreCellClass(s, par) {
+  if (s == null) return '';
+  const d = s - par;
+  if (d <= -2) return 'eagle';
+  if (d === -1) return 'birdie';
+  if (d === 0) return 'par';
+  if (d === 1) return 'bogey';
+  return 'double';
+}
+
+// ─────── STORE ───────
+const TCtx = React.createContext(null);
+function TournamentProvider({ children }) {
+  const [players, setPlayers] = React.useState(buildPlayers);
+  const [activePlayerId, setActivePlayerId] = React.useState('jk');
+  const [activeGroupId, setActiveGroupId] = React.useState(2);
+  const [currentHole, setCurrentHole] = React.useState(INITIAL_HOLES + 1);
+  const [pulseId, setPulseId] = React.useState(null);
+  // Public visitors are NOT signed in by default. Board + Archive remain fully accessible;
+  // Score entry + Scorecard require signing in with a group code.
+  const [signedIn, setSignedIn] = React.useState(false);
+
+  const setScore = React.useCallback((pid, idx, val) => {
+    setPlayers(prev => prev.map(p => {
+      if (p.id !== pid) return p;
+      const scores = p.scores.slice(); scores[idx] = val;
+      return { ...p, scores };
+    }));
+    setPulseId(pid);
+    setTimeout(() => setPulseId(c => c === pid ? null : c), 1400);
+  }, []);
+
+  const leaderboard = React.useMemo(() => {
+    const rows = players.map(p => {
+      const { gross, holes } = sumScores(p.scores);
+      const grossRel = gross - parThru(holes);
+      const hcpApplied = Math.round(p.hcp * (holes / 18));
+      const rel = grossRel - hcpApplied;
+      return { ...p, rel, grossRel, holes };
+    });
+    rows.sort((a,b) => a.rel - b.rel || a.grossRel - b.grossRel);
+    let prev = null, prevPos = 1;
+    rows.forEach((r,i) => {
+      if (prev !== null && r.rel === prev) r.pos = prevPos;
+      else { r.pos = i + 1; prevPos = r.pos; }
+      prev = r.rel;
+    });
+    const byRel = {};
+    rows.forEach(r => byRel[r.rel] = (byRel[r.rel] || 0) + 1);
+    rows.forEach(r => r.tie = byRel[r.rel] > 1);
+    return rows;
+  }, [players]);
+
+  return (
+    <TCtx.Provider value={{
+      players, leaderboard, pulseId, setScore,
+      activePlayerId, setActivePlayerId,
+      activeGroupId, setActiveGroupId,
+      currentHole, setCurrentHole,
+      signedIn, setSignedIn,
+      groups: GROUPS,
+    }}>{children}</TCtx.Provider>
+  );
+}
+const useT = () => React.useContext(TCtx);
+
+// ─────── ROUTING ───────
+// Public hash router. Board + Archive are fully public.
+// Signing in (#/signin) is required only for Score + Card — users get a friendly gate on those tabs.
+// Admin lives at admin.html (separate URL), linked from the sign-in page.
+const ROUTES = ['home','board','score','card','archive','signin'];
+function useRoute() {
+  const read = () => {
+    const h = (location.hash || '#/home').replace('#/', '');
+    return ROUTES.includes(h) ? h : 'home';
+  };
+  const [r, setR] = React.useState(read);
+  React.useEffect(() => {
+    const on = () => { setR(read()); window.scrollTo({ top: 0, behavior: 'instant' }); };
+    window.addEventListener('hashchange', on);
+    return () => window.removeEventListener('hashchange', on);
+  }, []);
+  const go = (to) => { location.hash = '#/' + to; };
+  return [r, go];
+}
+
+// ─────── LAYOUT ───────
+function TopBar() {
+  const [scrolled, setScrolled] = React.useState(false);
+  React.useEffect(() => {
+    const on = () => setScrolled(window.scrollY > 4);
+    window.addEventListener('scroll', on, { passive: true });
+    return () => window.removeEventListener('scroll', on);
+  }, []);
+  return (
+    <header className={'topbar' + (scrolled ? ' scrolled' : '')}>
+      <a href="#/home" className="brand">
+        <div className="brand-mark">M</div>
+        <div className="brand-name">Masters &apos;26</div>
+      </a>
+      <span className="live-pill"><span className="live-dot"/>LIVE · R3</span>
+    </header>
+  );
+}
+function TabBar({ route, go }) {
+  const tabs = [
+    { id: 'home',    label: 'Home' },
+    { id: 'board',   label: 'Board' },
+    { id: 'score',   label: 'Score' },
+    { id: 'card',    label: 'Card' },
+    { id: 'archive', label: 'Past' },
+  ];
+  return (
+    <nav className="tabbar" aria-label="Primary">
+      <div className="tabbar-inner">
+        {tabs.map(t => (
+          <button key={t.id} className={'tab' + (route === t.id ? ' active' : '')} onClick={() => go(t.id)}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+// ─────── CONFETTI ───────
+function Confetti({ show }) {
+  if (!show) return null;
+  const pieces = Array.from({ length: 14 }, (_, i) => {
+    const angle = (i / 14) * Math.PI * 2;
+    const dist = 60 + Math.random() * 40;
+    return { i,
+      tx: Math.cos(angle) * dist, ty: Math.sin(angle) * dist - 20,
+      tr: Math.random() * 540 - 270,
+      color: ['#FF4D1F', '#0F8F5A', '#FFD700'][i % 3],
+    };
+  });
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10 }}>
+      {pieces.map(p => (
+        <div key={p.i} className="confetti-piece"
+             style={{ background: p.color, '--tx': `${p.tx}px`, '--ty': `${p.ty}px`, '--tr': `${p.tr}deg` }} />
+      ))}
+    </div>
+  );
+}
+
+// ─────── HOME ───────
+function Home({ go }) {
+  const { leaderboard, players, activePlayerId, signedIn } = useT();
+  const me = players.find(p => p.id === activePlayerId);
+  const myRow = leaderboard.find(r => r.id === activePlayerId);
+  const top3 = leaderboard.slice(0, 3);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const doRefresh = () => { setRefreshing(true); setTimeout(() => setRefreshing(false), 900); };
+
+  return (
+    <div className="route">
+      {/* Hero */}
+      <section className="pad" style={{ paddingTop: 16, paddingBottom: 24 }}>
+        <div className="rise">
+          <div className="h-hero">The<br/>Masters<br/><span className="accent">&apos;26.</span></div>
+        </div>
+        <div className="mute" style={{ fontSize: 13, marginTop: 14, display: 'flex', gap: 8, alignItems: 'center' }}>
+          <span>Round 3 · Goose Creek</span>
+          <span style={{ width: 3, height: 3, borderRadius: 99, background: 'currentColor' }} />
+          <span>Mira Loma, CA</span>
+        </div>
+        <button onClick={doRefresh} style={{
+          marginTop: 14, background: 'transparent', border: 'none', padding: '4px 0',
+          display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--mute)',
+          fontFamily: 'var(--f-head)', fontSize: 10, fontWeight: 600, letterSpacing: 1,
+        }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className={refreshing ? 'spin' : ''}><path d="M21 12a9 9 0 11-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+          UPDATED JUST NOW
+        </button>
+      </section>
+
+      {/* Your stat block (or sign-in CTA) */}
+      {signedIn && me && myRow ? (
+        <section style={{ padding: '0 14px', marginBottom: 24 }}>
+          <div className="card dark" style={{ borderRadius: 22, padding: 22, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', right: -30, bottom: -40, fontFamily: 'var(--f-head)', fontWeight: 700, fontSize: 200, lineHeight: 1, color: 'rgba(255,77,31,0.12)' }}>{myRow.rel}</div>
+            <div style={{ fontFamily: 'var(--f-head)', fontSize: 10, fontWeight: 700, letterSpacing: 2, color: 'var(--accent)', textTransform: 'uppercase' }}>Your round</div>
+            <div style={{ fontFamily: 'var(--f-head)', fontWeight: 700, fontSize: 26, color: '#fff', marginTop: 6 }}>{me.name}</div>
+            <div style={{ display: 'flex', gap: 18, marginTop: 20, position: 'relative' }}>
+              {[
+                { k: 'Net', v: fmtRel(myRow.rel), color: 'var(--accent)' },
+                { k: 'Pos', v: (myRow.tie ? 'T' : '') + myRow.pos, color: '#fff' },
+                { k: 'Thru', v: myRow.holes, color: '#fff' },
+              ].map(s => (
+                <div key={s.k}>
+                  <div style={{ fontSize: 10, color: '#aaa', letterSpacing: 1, textTransform: 'uppercase' }}>{s.k}</div>
+                  <div className="num" style={{ fontSize: 48, color: s.color, lineHeight: 0.9, marginTop: 4 }}>{s.v}</div>
+                </div>
+              ))}
+            </div>
+            <button className="btn" style={{ marginTop: 22 }} onClick={() => go('score')}>
+              Enter Hole {myRow.holes + 1} →
+            </button>
+          </div>
+        </section>
+      ) : (
+        <section className="pad" style={{ marginBottom: 24 }}>
+          <div className="card" style={{ padding: 20 }}>
+            <div style={{ fontFamily: 'var(--f-head)', fontWeight: 600, fontSize: 18 }}>Sign in to enter scores</div>
+            <div className="mute" style={{ fontSize: 13, marginTop: 6 }}>Use your group scorer code.</div>
+            <button className="btn" style={{ marginTop: 14 }} onClick={() => go('signin')}>Sign in →</button>
+          </div>
+        </section>
+      )}
+
+      {/* Top 3 */}
+      <section className="pad" style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
+          <div className="h-section">Leaderboard</div>
+          <a href="#/board" className="accent" style={{ fontFamily: 'var(--f-head)', fontWeight: 700, fontSize: 12 }}>See all →</a>
+        </div>
+        {top3.map((r, i) => (
+          <div key={r.id} className="lb-row">
+            <div className={'lb-pos' + (i === 0 ? ' first' : '')}>{r.tie ? 'T' : ''}{r.pos}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: 'var(--f-head)', fontWeight: 600, fontSize: 15 }}>{r.name}</div>
+              <div className="mute" style={{ fontSize: 11, marginTop: 2 }}>Group {r.group} · Thru {r.holes}</div>
+            </div>
+            <div className="num" style={{ fontSize: 24, color: r.rel <= 0 ? 'var(--good)' : 'var(--bad)' }}>{fmtRel(r.rel)}</div>
+          </div>
+        ))}
+      </section>
+
+      {/* Live moves */}
+      <section className="pad">
+        <div className="h-section" style={{ marginBottom: 14 }}>Live moves</div>
+        {[
+          { who: 'James Kim', what: 'Birdie', hole: 12, col: 'var(--good)' },
+          { who: 'Sam Baik',  what: 'Bogey',  hole: 11, col: 'var(--bad)' },
+          { who: 'Scott Hitomi', what: 'Par', hole: 12, col: 'var(--mute)' },
+        ].map((f, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: '1px solid var(--line)' }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--surface-alt)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} className="num">
+              {f.hole}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: 'var(--f-head)', fontWeight: 600, fontSize: 15 }}>{f.who}</div>
+              <div style={{ fontFamily: 'var(--f-head)', fontWeight: 700, fontSize: 11, color: f.col, marginTop: 2 }}>
+                {f.what} on {HOLE_NAMES[f.hole - 1]}
+              </div>
+            </div>
+            <div className="mute" style={{ fontFamily: 'var(--f-head)', fontSize: 10, fontWeight: 600, letterSpacing: 0.5 }}>2m</div>
+          </div>
+        ))}
+      </section>
+
+      <div className="end-pad" />
+    </div>
+  );
+}
+
+// ─────── LEADERBOARD ───────
+function Board() {
+  const { leaderboard, pulseId } = useT();
+  const [mode, setMode] = React.useState('net');
+  const [refreshing, setRefreshing] = React.useState(false);
+  const doRefresh = () => { setRefreshing(true); setTimeout(() => setRefreshing(false), 900); };
+  return (
+    <div className="route">
+      <section className="pad" style={{ paddingTop: 12, marginBottom: 18 }}>
+        <div className="rise">
+          <div className="h-page">Standings<span className="accent">.</span></div>
+        </div>
+        <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center' }}>
+          <span className="mute" style={{ fontSize: 12 }}>Round 3 · 12 players · Thru 12</span>
+          <button onClick={doRefresh} style={{ background: 'transparent', border: 'none', color: 'var(--mute)', padding: 2, display: 'inline-flex' }} aria-label="Refresh">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className={refreshing ? 'spin' : ''}><path d="M21 12a9 9 0 11-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+          </button>
+        </div>
+      </section>
+      <div className="chips" style={{ marginBottom: 16 }}>
+        <button className={'chip' + (mode === 'net' ? ' active' : '')} onClick={() => setMode('net')}>Net</button>
+        <button className={'chip' + (mode === 'gross' ? ' active' : '')} onClick={() => setMode('gross')}>Gross</button>
+        <button className="chip">By group</button>
+      </div>
+      <div style={{ padding: '0 12px' }}>
+        {leaderboard.map((r, i) => {
+          const showRel = mode === 'net' ? r.rel : r.grossRel;
+          const altRel  = mode === 'net' ? r.grossRel : r.rel;
+          const barPct = Math.min(100, Math.max(6, (r.holes / 18) * 100));
+          return (
+            <div key={r.id} className={'lb-row' + (pulseId === r.id ? ' pulse' : '')} style={{ animation: `rise 0.4s ${i * 0.02}s cubic-bezier(0.2,0.8,0.2,1) both` }}>
+              <div className={'lb-pos' + (r.pos === 1 ? ' first' : '')}>{r.tie ? 'T' : ''}{r.pos}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: 'var(--f-head)', fontWeight: 600, fontSize: 15 }}>{r.name}</div>
+                <div style={{ display: 'flex', gap: 6, marginTop: 7, alignItems: 'center' }}>
+                  <div className="lb-bar"><div style={{ width: barPct + '%' }}/></div>
+                  <div className="mute" style={{ fontFamily: 'var(--f-head)', fontSize: 10, fontWeight: 600 }}>{thruLabel(r.holes)}</div>
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div className="num" style={{ fontSize: 22, color: showRel <= 0 ? 'var(--good)' : 'var(--bad)', lineHeight: 1 }}>{fmtRel(showRel)}</div>
+                <div className="mute" style={{ fontFamily: 'var(--f-head)', fontSize: 10, marginTop: 4 }}>
+                  {mode === 'net' ? 'GRS' : 'NET'} {fmtRel(altRel)}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="end-pad" />
+    </div>
+  );
+}
+
+// ─────── SCORE ENTRY ───────
+function Score() {
+  const { players, groups, activeGroupId, setActiveGroupId, currentHole, setCurrentHole, setScore, signedIn } = useT();
+  const h = currentHole;
+  const par = PARS[h - 1]; const yd = YARDS[h - 1]; const name = HOLE_NAMES[h - 1];
+  const groupPlayers = players.filter(p => p.group === activeGroupId);
+  const [celebrate, setCelebrate] = React.useState(null);
+  const onScore = (pid, n) => {
+    setScore(pid, h - 1, n);
+    if (n <= par - 1) {
+      setCelebrate(pid);
+      setTimeout(() => setCelebrate(null), 900);
+    }
+  };
+
+  if (!signedIn) {
+    return (
+      <div className="route pad" style={{ paddingTop: 20 }}>
+        <div className="h-page">Score entry</div>
+        <div className="mute" style={{ fontSize: 13, marginTop: 8 }}>Sign in with your group scorer code to begin.</div>
+        <button className="btn" style={{ marginTop: 18 }} onClick={() => location.hash = '#/signin'}>Sign in →</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="route">
+      <section className="pad" style={{ paddingTop: 12, marginBottom: 14 }}>
+        <div className="rise">
+          <div className="h-page">Score entry<span className="accent">.</span></div>
+        </div>
+      </section>
+
+      <div className="chips" style={{ marginBottom: 14 }}>
+        {Object.entries(groups).map(([gid, g]) => (
+          <button key={gid} className={'chip' + (+gid === activeGroupId ? ' active' : '')} onClick={() => setActiveGroupId(+gid)}>{g.code}</button>
+        ))}
+      </div>
+
+      {/* Hole hero */}
+      <section style={{ padding: '0 14px', marginBottom: 18 }}>
+        <div key={h} className="card dark" style={{ borderRadius: 22, padding: 22, position: 'relative', overflow: 'hidden', animation: 'rise 0.3s cubic-bezier(0.2,0.8,0.2,1) both' }}>
+          <div style={{ position: 'absolute', right: -10, top: -40, fontFamily: 'var(--f-head)', fontWeight: 700, fontSize: 220, lineHeight: 1, color: 'rgba(255,255,255,0.05)' }}>{h}</div>
+          <div style={{ position: 'relative' }}>
+            <div style={{ fontFamily: 'var(--f-head)', fontSize: 10, fontWeight: 700, letterSpacing: 2, color: 'var(--accent)', textTransform: 'uppercase' }}>Hole {h} / 18</div>
+            <div style={{ fontFamily: 'var(--f-head)', fontWeight: 700, fontSize: 32, marginTop: 6, color: '#fff' }}>{name}</div>
+            <div style={{ display: 'flex', gap: 24, marginTop: 14, alignItems: 'flex-end' }}>
+              <div>
+                <div style={{ fontSize: 10, color: '#888', letterSpacing: 1, textTransform: 'uppercase' }}>Par</div>
+                <div className="num" style={{ fontSize: 28, color: '#fff', marginTop: 3 }}>{par}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 10, color: '#888', letterSpacing: 1, textTransform: 'uppercase' }}>Yards</div>
+                <div className="num" style={{ fontSize: 28, color: '#fff', marginTop: 3 }}>{yd}</div>
+              </div>
+              <div style={{ flex: 1, textAlign: 'right' }}>
+                <div style={{ display: 'inline-flex', gap: 3, flexWrap: 'wrap', justifyContent: 'flex-end', maxWidth: 150 }}>
+                  {Array.from({ length: 18 }, (_, i) => (
+                    <div key={i} style={{ width: 5, height: 5, borderRadius: 99, background: i+1 === h ? 'var(--accent)' : i+1 < h ? '#555' : '#222' }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Players */}
+      <section className="pad">
+        {groupPlayers.map(p => {
+          const cur = p.scores[h - 1];
+          return (
+            <div key={p.id} className="card" style={{ borderRadius: 18, padding: 16, marginBottom: 10, position: 'relative' }}>
+              <Confetti show={celebrate === p.id} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontFamily: 'var(--f-head)', fontWeight: 600, fontSize: 16, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
+                  <div className="mute" style={{ fontSize: 10, marginTop: 2, textTransform: 'uppercase', letterSpacing: 1, fontFamily: 'var(--f-head)', fontWeight: 600 }}>Hcp {p.hcp}</div>
+                </div>
+                {cur != null && (() => {
+                  const klass = scoreCellClass(cur, par);
+                  const bg = klass === 'birdie' ? 'var(--good)' : klass === 'eagle' ? 'var(--accent)' : klass === 'par' ? 'var(--surface-alt)' : klass === 'bogey' ? '#F4DAD2' : 'var(--bad)';
+                  const fg = klass === 'par' ? 'var(--ink)' : klass === 'bogey' ? '#8A2A1C' : '#fff';
+                  return <div key={`${cur}-${p.id}`} className="pop" style={{ flexShrink: 0, padding: '4px 12px', borderRadius: 99, background: bg, color: fg, fontFamily: 'var(--f-head)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, whiteSpace: 'nowrap' }}>{scoreLabel(cur, par)}</div>;
+                })()}
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {[par - 2, par - 1, par, par + 1, par + 2, par + 3].filter(n => n >= 1).map(n => (
+                  <button key={n} className={'score-btn' + (cur === n ? ' selected' : '')} onClick={() => onScore(p.id, n)}>{n}</button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </section>
+
+      <section style={{ display: 'flex', gap: 8, padding: '14px 20px' }}>
+        <button onClick={() => setCurrentHole(Math.max(1, h - 1))} style={{
+          width: 56, height: 56, background: 'var(--surface)', color: 'var(--ink)',
+          border: '1px solid var(--line)', borderRadius: 99,
+          fontFamily: 'var(--f-head)', fontSize: 20, fontWeight: 700,
+        }}>←</button>
+        <button className="btn" onClick={() => setCurrentHole(Math.min(18, h + 1))}>Save & next hole →</button>
+      </section>
+      <div className="end-pad" />
+    </div>
+  );
+}
+
+// ─────── SCORECARD ───────
+function Card({ go }) {
+  const { players, activePlayerId, setActivePlayerId, signedIn } = useT();
+  if (!signedIn) {
+    return (
+      <div className="route pad" style={{ paddingTop: 20 }}>
+        <div className="h-page">Scorecard<span className="accent">.</span></div>
+        <div className="mute" style={{ fontSize: 13, marginTop: 8 }}>Sign in with your group code to see your personal scorecard.</div>
+        <button className="btn" style={{ marginTop: 18 }} onClick={() => go && go('signin')}>Sign in →</button>
+      </div>
+    );
+  }
+  const me = players.find(p => p.id === activePlayerId);
+  const front = [0,1,2,3,4,5,6,7,8];
+  const back  = [9,10,11,12,13,14,15,16,17];
+  const sum = (idx) => idx.reduce((a,i) => a + (me.scores[i] ?? 0), 0);
+  const sumPar = (idx) => idx.reduce((a,i) => a + PARS[i], 0);
+  // Par for holes actually played — don't count full-round par against a partial round
+  const sumParPlayed = (idx) => idx.reduce((a,i) => a + (me.scores[i] != null ? PARS[i] : 0), 0);
+  const total = sum(front) + sum(back);
+  const totalParPlayed = sumParPlayed(front) + sumParPlayed(back);
+  const holesPlayed = me.scores.filter(s => s != null).length;
+
+  return (
+    <div className="route">
+      <section className="pad" style={{ paddingTop: 12, marginBottom: 16 }}>
+        <div className="rise">
+          <div className="h-page">{me.name}</div>
+        </div>
+        <div className="mute" style={{ fontSize: 12, marginTop: 8, display: 'flex', gap: 14 }}>
+          <span>Handicap {me.hcp}</span><span>Group {me.group}</span>
+        </div>
+      </section>
+
+      <div className="chips" style={{ marginBottom: 18 }}>
+        {players.slice(0, 6).map(p => (
+          <button key={p.id} className={'chip' + (p.id === activePlayerId ? ' active' : '')} onClick={() => setActivePlayerId(p.id)}>{p.name.split(' ')[0]}</button>
+        ))}
+      </div>
+
+      <section className="pad">
+        {[{ name: 'Front 9', idx: front }, { name: 'Back 9', idx: back }].map((g, gi) => (
+          <div key={g.name} style={{ marginBottom: 16 }}>
+            <div style={{ fontFamily: 'var(--f-head)', fontWeight: 700, fontSize: 12, letterSpacing: 1.5, color: 'var(--mute)', textTransform: 'uppercase', marginBottom: 8, display: 'flex', justifyContent: 'space-between', whiteSpace: 'nowrap', gap: 8 }}>
+              <span>{g.name}</span><span>Par {sumPar(g.idx)}</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, 1fr)', gap: 4 }}>
+              {g.idx.map(i => <div key={i} style={{ textAlign: 'center', fontSize: 10, color: 'var(--mute)', fontFamily: 'var(--f-head)', fontWeight: 700 }}>{i+1}</div>)}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, 1fr)', gap: 4, marginTop: 6 }}>
+              {g.idx.map((i, j) => {
+                const s = me.scores[i];
+                const klass = scoreCellClass(s, PARS[i]);
+                return <div key={i} className={'sc-cell ' + klass} style={{ animation: s != null ? `pop 0.35s ${gi * 0.4 + j * 0.04}s cubic-bezier(0.34,1.56,0.64,1) both` : 'none' }}>{s ?? '–'}</div>;
+              })}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontFamily: 'var(--f-head)', fontSize: 13 }}>
+              <span className="mute">{g.name === 'Front 9' ? 'OUT' : 'IN'}</span>
+              <span style={{ fontWeight: 700 }}>{sum(g.idx) || '–'}</span>
+            </div>
+          </div>
+        ))}
+
+        <div className="card dark" style={{ marginTop: 16, padding: 22, borderRadius: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: 10, color: '#888', letterSpacing: 1, textTransform: 'uppercase', fontFamily: 'var(--f-head)', fontWeight: 700 }}>Total</div>
+            <div className="num" style={{ fontSize: 44, color: 'var(--accent)', lineHeight: 1, marginTop: 6 }}>{total || '–'}</div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: 10, color: '#888', letterSpacing: 1, textTransform: 'uppercase', fontFamily: 'var(--f-head)', fontWeight: 700 }}>To par</div>
+            <div className="num" style={{ fontSize: 30, color: '#fff', marginTop: 8 }}>{holesPlayed ? fmtRel(total - totalParPlayed) : '–'}</div>
+            <div className="mute" style={{ fontSize: 10, marginTop: 4, fontFamily: 'var(--f-head)', fontWeight: 600, letterSpacing: 0.5 }}>thru {holesPlayed}</div>
+          </div>
+        </div>
+      </section>
+
+      <div className="end-pad" />
+    </div>
+  );
+}
+
+// ─────── ARCHIVE ───────
+const HISTORY = [
+  {
+    year: 2025, name: 'Fall Classic', course: 'Goose Creek', date: 'Oct 18, 2025', purse: 2400, field: 12,
+    results: [
+      { pos: 1, name: 'Scott Hitomi', score: '-8',  gross: 280, payout: 1000 },
+      { pos: 2, name: 'James Kim',    score: '-6',  gross: 282, payout: 600 },
+      { pos: 3, name: 'Daniel Johung',score: '-4',  gross: 284, payout: 400 },
+      { pos: 4, name: 'Sam Baik',     score: '-2',  gross: 286, payout: 250 },
+      { pos: 5, name: 'Justin Yun',   score: '+1',  gross: 289, payout: 150 },
+      { pos: 6, name: 'Mike Kwon',    score: '+3',  gross: 291, payout: 0 },
+      { pos: 7, name: 'Steve Choi',   score: '+5',  gross: 293, payout: 0 },
+      { pos: 8, name: 'Tim Yoo',      score: '+7',  gross: 295, payout: 0 },
+    ],
+  },
+  {
+    year: 2025, name: 'Spring Open', course: 'Trump National', date: 'Apr 12, 2025', purse: 3000, field: 12,
+    results: [
+      { pos: 1, name: 'James Kim',    score: '-12', gross: 276, payout: 1400 },
+      { pos: 2, name: 'Scott Hitomi', score: '-9',  gross: 279, payout: 750 },
+      { pos: 3, name: 'Sam Baik',     score: '-5',  gross: 283, payout: 500 },
+      { pos: 4, name: 'Joe Park',     score: '-3',  gross: 285, payout: 250 },
+      { pos: 5, name: 'Brian Ko',     score: 'E',   gross: 288, payout: 100 },
+    ],
+  },
+  {
+    year: 2024, name: 'Masters', course: 'Goose Creek', date: 'Nov 2, 2024', purse: 2000, field: 10,
+    results: [
+      { pos: 1, name: 'Daniel Johung',score: '-5',  gross: 283, payout: 900 },
+      { pos: 2, name: 'Scott Hitomi', score: '-4',  gross: 284, payout: 550 },
+      { pos: 3, name: 'James Kim',    score: '-2',  gross: 286, payout: 350 },
+      { pos: 4, name: 'Justin Yun',   score: 'E',   gross: 288, payout: 200 },
+    ],
+  },
+  {
+    year: 2024, name: 'Summer Cup', course: 'Pelican Hill', date: 'Jul 20, 2024', purse: 1800, field: 10,
+    results: [
+      { pos: 1, name: 'Sam Baik',     score: '-3',  gross: 285, payout: 800 },
+      { pos: 2, name: 'Mike Kwon',    score: '-1',  gross: 287, payout: 500 },
+      { pos: 3, name: 'James Kim',    score: '+2',  gross: 290, payout: 300 },
+      { pos: 4, name: 'Jim Chung',    score: '+4',  gross: 292, payout: 200 },
+    ],
+  },
+  {
+    year: 2023, name: 'Masters', course: 'Goose Creek', date: 'Oct 28, 2023', purse: 1600, field: 8,
+    results: [
+      { pos: 1, name: 'Justin Yun',   score: '-9',  gross: 279, payout: 750 },
+      { pos: 2, name: 'James Kim',    score: '-5',  gross: 283, payout: 450 },
+      { pos: 3, name: 'Scott Hitomi', score: '-2',  gross: 286, payout: 250 },
+      { pos: 4, name: 'Joe Park',     score: '+3',  gross: 291, payout: 150 },
+    ],
+  },
+];
+function fmtMoney(n) { return n === 0 ? '—' : '$' + n.toLocaleString(); }
+
+function ArchiveCard({ h, open, onToggle, index }) {
+  return (
+    <div className="card" style={{ padding: 0, marginBottom: 10, borderRadius: 18, overflow: 'hidden', animation: `rise 0.4s ${index * 0.05}s cubic-bezier(0.2,0.8,0.2,1) both` }}>
+      <button onClick={onToggle} aria-expanded={open} style={{
+        width: '100%', background: 'transparent', border: 'none', padding: 18,
+        display: 'flex', gap: 14, alignItems: 'center', textAlign: 'left',
+      }}>
+        <div style={{ fontFamily: 'var(--f-head)', fontWeight: 700, fontSize: 30, color: 'var(--accent)', minWidth: 62, lineHeight: 1 }}>&apos;{String(h.year).slice(2)}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: 'var(--f-head)', fontWeight: 600, fontSize: 16, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{h.name}</div>
+          <div className="mute" style={{ fontSize: 11, marginTop: 3 }}>{h.course} · {h.date}</div>
+          <div style={{ fontSize: 13, marginTop: 8, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <span>🏆</span><span style={{ fontWeight: 600 }}>{h.results[0].name}</span>
+            <span className="mute" style={{ fontFamily: 'var(--f-num)', fontWeight: 700 }}>{h.results[0].score}</span>
+          </div>
+        </div>
+        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+          <div style={{ fontFamily: 'var(--f-head)', fontSize: 9, fontWeight: 700, letterSpacing: 1, color: 'var(--mute)', textTransform: 'uppercase' }}>Purse</div>
+          <div className="num" style={{ fontSize: 18, color: 'var(--good)', marginTop: 2 }}>${(h.purse/1000).toFixed(1)}k</div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ marginTop: 6, color: 'var(--mute)', transition: 'transform 0.25s', transform: open ? 'rotate(180deg)' : 'none' }}><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </button>
+
+      {open && (
+        <div style={{ borderTop: '1px solid var(--line)', padding: '14px 16px 18px 16px', animation: 'rise 0.3s cubic-bezier(0.2,0.8,0.2,1) both' }}>
+          <div style={{ display: 'flex', gap: 14, marginBottom: 12 }}>
+            {[
+              { k: 'Field', v: h.field },
+              { k: 'Purse', v: '$' + h.purse.toLocaleString() },
+              { k: 'Winner', v: h.results[0].score },
+            ].map(s => (
+              <div key={s.k} style={{ flex: 1 }}>
+                <div style={{ fontFamily: 'var(--f-head)', fontSize: 9, fontWeight: 700, letterSpacing: 1, color: 'var(--mute)', textTransform: 'uppercase' }}>{s.k}</div>
+                <div className="num" style={{ fontSize: 20, marginTop: 3 }}>{s.v}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 52px 62px', gap: 8, padding: '10px 2px', borderBottom: '1px solid var(--line)', fontFamily: 'var(--f-head)', fontSize: 9, fontWeight: 700, letterSpacing: 1, color: 'var(--mute)', textTransform: 'uppercase' }}>
+            <span>Pos</span><span>Player</span><span style={{ textAlign: 'right' }}>Score</span><span style={{ textAlign: 'right' }}>Payout</span>
+          </div>
+          {h.results.map((r, i) => (
+            <div key={i} style={{
+              display: 'grid', gridTemplateColumns: '28px 1fr 52px 62px', gap: 8, padding: '10px 2px',
+              borderBottom: i === h.results.length - 1 ? 'none' : '1px solid var(--line)',
+              alignItems: 'center',
+              animation: `rise 0.3s ${i * 0.03}s cubic-bezier(0.2,0.8,0.2,1) both`,
+            }}>
+              <span className="num" style={{ fontSize: 14, color: r.pos === 1 ? 'var(--accent)' : 'var(--ink)' }}>{r.pos}</span>
+              <span style={{ fontFamily: 'var(--f-head)', fontWeight: r.pos === 1 ? 700 : 500, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {r.pos === 1 && <span style={{ marginRight: 4 }}>🏆</span>}{r.name}
+              </span>
+              <span className="num" style={{ fontSize: 14, textAlign: 'right', color: r.score.startsWith('-') || r.score === 'E' ? 'var(--good)' : 'var(--bad)' }}>{r.score}</span>
+              <span className="num" style={{ fontSize: 14, textAlign: 'right', color: r.payout > 0 ? 'var(--ink)' : 'var(--mute)', fontWeight: r.payout > 0 ? 700 : 500 }}>{fmtMoney(r.payout)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Archive() {
+  const [openIdx, setOpenIdx] = React.useState(0); // most recent open by default
+  const totalWinnings = React.useMemo(() => {
+    const by = {};
+    HISTORY.forEach(h => h.results.forEach(r => { by[r.name] = (by[r.name] || 0) + r.payout; }));
+    return Object.entries(by).sort((a,b) => b[1] - a[1]).slice(0, 3);
+  }, []);
+
+  return (
+    <div className="route">
+      <section className="pad" style={{ paddingTop: 12, marginBottom: 18 }}>
+        <div className="rise">
+          <div className="h-page">Past<br/>Champions<span className="accent">.</span></div>
+        </div>
+        <div className="mute" style={{ fontSize: 12, marginTop: 10 }}>{HISTORY.length} tournaments · tap any year to see full results</div>
+      </section>
+
+      {/* Career money leaderboard */}
+      <section style={{ padding: '0 14px', marginBottom: 20 }}>
+        <div className="card dark" style={{ borderRadius: 22, padding: 20 }}>
+          <div style={{ fontFamily: 'var(--f-head)', fontSize: 10, fontWeight: 700, letterSpacing: 2, color: 'var(--accent)', textTransform: 'uppercase' }}>Career earnings</div>
+          <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {totalWinnings.map(([name, total], i) => (
+              <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ width: 28, textAlign: 'center', fontFamily: 'var(--f-head)', fontWeight: 700, fontSize: 13, color: i === 0 ? 'var(--accent)' : '#888' }}>{i + 1}</div>
+                <div style={{ flex: 1, fontFamily: 'var(--f-head)', fontWeight: 600, fontSize: 15, color: '#fff' }}>{name}</div>
+                <div className="num" style={{ fontSize: 20, color: i === 0 ? 'var(--accent)' : '#fff' }}>${total.toLocaleString()}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section style={{ padding: '0 12px' }}>
+        {HISTORY.map((h, i) => (
+          <ArchiveCard key={i} h={h} index={i} open={openIdx === i} onToggle={() => setOpenIdx(openIdx === i ? -1 : i)} />
+        ))}
+      </section>
+      <div className="end-pad" />
+    </div>
+  );
+}
+
+// ─────── SIGN-IN (group code) ───────
+// The admin hands each group a 4-char code. Any player in the group uses it to sign in;
+// once in, they can score for everyone in their foursome. We then prompt them to pick
+// which player in the group is them (for the Scorecard tab).
+function SignIn() {
+  const { players, groups, setActivePlayerId, setActiveGroupId, setSignedIn } = useT();
+  const [code, setCode] = React.useState('');
+  const [matchedGroup, setMatchedGroup] = React.useState(null);
+  const [err, setErr] = React.useState('');
+
+  // Normalize code lookup
+  const groupByCode = Object.entries(groups).reduce((acc, [gid, g]) => {
+    acc[g.code.toUpperCase()] = +gid; return acc;
+  }, {});
+
+  const submit = (e) => {
+    e.preventDefault();
+    const gid = groupByCode[code.toUpperCase().trim()];
+    if (!gid) { setErr('Code not recognized. Ask your organizer for this group’s 4-character code.'); return; }
+    setMatchedGroup(gid);
+    setActiveGroupId(gid);
+  };
+
+  const chooseMe = (pid) => {
+    setActivePlayerId(pid);
+    setSignedIn(true);
+    location.hash = '#/home';
+  };
+
+  // Step 2: pick which player in the group is you
+  if (matchedGroup != null) {
+    const gp = players.filter(p => p.group === matchedGroup);
+    const g = groups[matchedGroup];
+    return (
+      <div className="route pad" style={{ paddingTop: 24 }}>
+        <div className="rise"><div className="h-page">Group {matchedGroup}<span className="accent">.</span></div></div>
+        <div className="mute" style={{ fontSize: 13, marginTop: 10, marginBottom: 8 }}>Tee time {g.tee} · {gp.length} players</div>
+        <div style={{ fontFamily: 'var(--f-head)', fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--mute)', marginTop: 22, marginBottom: 10 }}>Which one are you?</div>
+        {gp.map(p => (
+          <button key={p.id} onClick={() => chooseMe(p.id)} style={{
+            width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', marginBottom: 8,
+            background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16, textAlign: 'left', cursor: 'pointer',
+          }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--surface-alt)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--f-head)', fontWeight: 700, fontSize: 13 }}>{p.name.split(' ').map(w => w[0]).slice(0,2).join('')}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: 'var(--f-head)', fontWeight: 600, fontSize: 16 }}>{p.name}</div>
+              <div className="mute" style={{ fontSize: 11, marginTop: 2 }}>Handicap {p.hcp}</div>
+            </div>
+            <div style={{ color: 'var(--accent)', fontFamily: 'var(--f-head)', fontWeight: 700, fontSize: 18 }}>→</div>
+          </button>
+        ))}
+        <button className="btn ghost" style={{ marginTop: 12 }} onClick={() => { setMatchedGroup(null); setCode(''); }}>← Use a different code</button>
+        <div className="end-pad" />
+      </div>
+    );
+  }
+
+  // Step 1: enter group code
+  return (
+    <div className="route pad" style={{ paddingTop: 24 }}>
+      <div className="rise"><div className="h-page">Sign in<span className="accent">.</span></div></div>
+      <div className="mute" style={{ fontSize: 13, marginTop: 10, marginBottom: 24 }}>Enter your group’s 4-character code to score your round. Any player in the group can score for everyone.</div>
+      <form onSubmit={submit}>
+        <label className="sr" htmlFor="code">Group code</label>
+        <input id="code" className="input" placeholder="E.g. GF2P" maxLength={4} value={code} onChange={e => { setCode(e.target.value); setErr(''); }} autoFocus autoComplete="off" spellCheck="false" />
+        {err && <div style={{ color: 'var(--bad)', fontSize: 12, marginTop: 10 }}>{err}</div>}
+        <button type="submit" className="btn" style={{ marginTop: 16 }}>Continue →</button>
+      </form>
+      <div className="mute" style={{ fontSize: 11, marginTop: 22, lineHeight: 1.5 }}>
+        Demo codes: <b>GF2P</b> · <b>MK7A</b> · <b>RB9X</b> · <b>QN4H</b>
+        <br/><span style={{ opacity: 0.7 }}>Organizer? <a href="admin.html" style={{ color: 'var(--accent)', fontWeight: 600 }}>Admin sign-in →</a></span>
+      </div>
+      <div className="end-pad" />
+    </div>
+  );
+}
+
+// ─────── ROOT ───────
+function App() {
+  const [route, go] = useRoute();
+  const views = { home: Home, board: Board, score: Score, card: Card, archive: Archive, signin: SignIn };
+  const View = views[route] || Home;
+  return (
+    <TournamentProvider>
+      <div className="app">
+        <TopBar />
+        <main>
+          <View go={go} />
+        </main>
+        <TabBar route={route === 'signin' ? 'home' : route} go={go} />
+      </div>
+    </TournamentProvider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
