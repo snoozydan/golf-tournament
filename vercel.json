@@ -1,7 +1,12 @@
 {
+  "version": 2,
+  "buildCommand": "node scripts/inject-env.js",
+  "outputDirectory": "public",
+  "framework": null,
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/admin", "destination": "/admin.html" }
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/", "destination": "/index.html" }
   ],
   "headers": [
     {

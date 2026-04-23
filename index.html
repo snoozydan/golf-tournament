@@ -42,9 +42,22 @@
     position: relative;
     padding-bottom: var(--nav-h);
   }
-  @media (min-width: 540px) {
+  @media (min-width: 540px) and (max-width: 899px) {
     body { background: #e7e4dc; }
     .app { box-shadow: 0 0 0 1px rgba(0,0,0,0.05); }
+  }
+
+  /* ─── DESKTOP (≥ 900px): sidebar nav, wide content, no phone frame ─── */
+  @media (min-width: 1024px) {
+    :root { --nav-h: 0px; --sidebar-w: 240px; }
+    body { background: var(--bg); }
+    .app {
+      max-width: none; padding: 0 0 0 var(--sidebar-w);
+      padding-bottom: 0; box-shadow: none;
+    }
+    main { max-width: 1120px; margin: 0 auto; padding: 0 40px; }
+    .h-hero { font-size: clamp(72px, 8vw, 120px); }
+    .h-page { font-size: clamp(54px, 6vw, 80px); }
   }
 
   a { color: inherit; text-decoration: none; }
@@ -62,6 +75,9 @@
     background: rgba(244,244,241,0.85);
     border-bottom: 1px solid transparent;
     transition: border-color 0.2s;
+  }
+  @media (min-width: 1024px) {
+    .topbar { display: none; } /* desktop uses sidebar brand instead */
   }
   .topbar.scrolled { border-bottom-color: var(--line); }
   .brand { display: flex; align-items: center; gap: 10px; }
@@ -103,6 +119,43 @@
     transition: background 0.2s, color 0.2s;
   }
   .tab.active { background: var(--accent); color: var(--accent-ink); }
+
+  /* Desktop sidebar nav (replaces .tabbar at ≥ 900px) */
+  .sidebar {
+    display: none;
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
+    width: var(--sidebar-w); padding: 28px 20px;
+    background: var(--ink); color: #fff;
+    flex-direction: column; gap: 4px;
+  }
+  @media (min-width: 1024px) {
+    .sidebar { display: flex; }
+    .tabbar { display: none; }
+  }
+  .sb-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; padding: 0 4px; min-width: 0; }
+  .sb-brand .brand-mark { width: 34px; height: 34px; font-size: 15px; flex: 0 0 auto; }
+  .sb-brand-name { font-family: var(--f-head); font-weight: 700; font-size: 15px; color: #fff; white-space: nowrap; }
+  .sb-brand-sub { font-family: var(--f-head); font-size: 10px; color: #9A9A93; letter-spacing: 1.2px; text-transform: uppercase; margin-top: 2px; white-space: nowrap; }
+  .sb-tab {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 14px; border-radius: 10px; border: none; background: transparent;
+    font-family: var(--f-head); font-weight: 600; font-size: 14px;
+    color: #9A9A93; text-align: left; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .sb-tab:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  .sb-tab.active { background: var(--accent); color: var(--accent-ink); }
+  .sb-tab .sb-dot { width: 6px; height: 6px; border-radius: 99px; background: currentColor; opacity: 0; transition: opacity 0.15s; }
+  .sb-tab.active .sb-dot { opacity: 1; background: #fff; }
+  .sb-live {
+    margin-top: auto; padding: 14px;
+    background: rgba(255,255,255,0.04); border-radius: 12px;
+    font-size: 11px; color: #9A9A93;
+  }
+  .sb-live-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--accent); font-family: var(--f-head); font-weight: 700; font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase;
+  }
 
   /* Headings */
   .h-hero { font-family: var(--f-head); font-weight: 700; font-size: clamp(56px, 18vw, 82px); line-height: 0.88; letter-spacing: -0.03em; }
@@ -224,6 +277,60 @@
 
   /* Utility: sr-only */
   .sr { position: absolute; clip: rect(0 0 0 0); width: 1px; height: 1px; overflow: hidden; }
+
+  /* ─────── DESKTOP LAYOUT TWEAKS (≥ 900px) ─────── */
+  @media (min-width: 1024px) {
+    .pad { padding: 0; }
+    .chips { padding: 0; }
+
+    /* Home: hero left + stat card right, then top3 row */
+    .route { padding: 48px 0 80px; }
+    .home-grid {
+      display: grid !important;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 48px;
+      align-items: start;
+      margin-bottom: 48px;
+    }
+    .home-grid > section { margin-bottom: 0 !important; padding: 0 !important; }
+    .home-grid .h-hero { font-size: clamp(90px, 9vw, 140px) !important; }
+
+    /* Top3 side-by-side on desktop */
+    .top3-grid {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .top3-grid > * { margin-bottom: 0 !important; }
+
+    /* Board: wider cards */
+    .board-wrap { max-width: 820px; }
+
+    /* Score entry: hole on left, player cards on right */
+    .score-grid {
+      display: grid !important;
+      grid-template-columns: 360px 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+    .score-grid > * { padding: 0 !important; margin-bottom: 0 !important; }
+    .score-grid .hole-hero { position: sticky; top: 24px; }
+
+    /* Scorecard: center it with a reasonable width */
+    .card-wrap { max-width: 760px; margin: 0 auto; }
+
+    /* Archive: 2-column grid of closed cards; expanded spans both */
+    .archive-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    .archive-grid > .archive-open { grid-column: 1 / -1; }
+  }
+
+  @media (min-width: 1200px) {
+    main { padding: 0 64px !important; }
+  }
 </style>
 
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
@@ -418,6 +525,38 @@ function TabBar({ route, go }) {
   );
 }
 
+// Sidebar nav — used at ≥ 900px (CSS toggles it on; .tabbar toggles off)
+function Sidebar({ route, go }) {
+  const tabs = [
+    { id: 'home',    label: 'Home',        icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9.5L12 2l9 7.5V21a1 1 0 01-1 1h-5v-7h-6v7H4a1 1 0 01-1-1V9.5z"/></svg> },
+    { id: 'board',   label: 'Leaderboard', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="6" width="4" height="15"/><rect x="17" y="2" width="4" height="19"/></svg> },
+    { id: 'score',   label: 'Score entry', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z"/></svg> },
+    { id: 'card',    label: 'My Scorecard',icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 10h10M7 14h6"/></svg> },
+    { id: 'archive', label: 'Past Champions', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9H4.5A2.5 2.5 0 012 6.5V4a1 1 0 011-1h3"/><path d="M18 9h1.5A2.5 2.5 0 0022 6.5V4a1 1 0 00-1-1h-3"/><path d="M6 3h12v7a6 6 0 01-12 0V3zM9 21h6M12 15v6"/></svg> },
+  ];
+  return (
+    <aside className="sidebar" aria-label="Primary">
+      <a href="#/home" className="sb-brand">
+        <div className="brand-mark">M</div>
+        <div>
+          <div className="sb-brand-name">Masters &apos;26</div>
+          <div className="sb-brand-sub">Goose Creek</div>
+        </div>
+      </a>
+      {tabs.map(t => (
+        <button key={t.id} className={'sb-tab' + (route === t.id ? ' active' : '')} onClick={() => go(t.id)}>
+          <span style={{ display: 'inline-flex', width: 16, justifyContent: 'center' }}>{t.icon}</span>
+          <span>{t.label}</span>
+        </button>
+      ))}
+      <div className="sb-live">
+        <div className="sb-live-label"><span className="live-dot"/>Live · Round 3</div>
+        <div style={{ marginTop: 6, color: '#D6D6CF' }}>12 players · Thru 12</div>
+      </div>
+    </aside>
+  );
+}
+
 // ─────── CONFETTI ───────
 function Confetti({ show }) {
   if (!show) return null;
@@ -451,6 +590,7 @@ function Home({ go }) {
 
   return (
     <div className="route">
+      <div className="home-grid">
       {/* Hero */}
       <section className="pad" style={{ paddingTop: 16, paddingBottom: 24 }}>
         <div className="rise">
@@ -504,6 +644,7 @@ function Home({ go }) {
           </div>
         </section>
       )}
+      </div>{/* /home-grid */}
 
       {/* Top 3 */}
       <section className="pad" style={{ marginBottom: 28 }}>
@@ -559,6 +700,7 @@ function Board() {
   const doRefresh = () => { setRefreshing(true); setTimeout(() => setRefreshing(false), 900); };
   return (
     <div className="route">
+      <div className="board-wrap">
       <section className="pad" style={{ paddingTop: 12, marginBottom: 18 }}>
         <div className="rise">
           <div className="h-page">Standings<span className="accent">.</span></div>
@@ -601,6 +743,7 @@ function Board() {
         })}
       </div>
       <div className="end-pad" />
+      </div>{/* /board-wrap */}
     </div>
   );
 }
@@ -739,6 +882,7 @@ function Card({ go }) {
 
   return (
     <div className="route">
+      <div className="card-wrap">
       <section className="pad" style={{ paddingTop: 12, marginBottom: 16 }}>
         <div className="rise">
           <div className="h-page">{me.name}</div>
@@ -791,6 +935,7 @@ function Card({ go }) {
       </section>
 
       <div className="end-pad" />
+      </div>{/* /card-wrap */}
     </div>
   );
 }
@@ -1040,6 +1185,7 @@ function App() {
   return (
     <TournamentProvider>
       <div className="app">
+        <Sidebar route={route === 'signin' ? 'home' : route} go={go} />
         <TopBar />
         <main>
           <View go={go} />
