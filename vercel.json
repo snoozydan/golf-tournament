@@ -1,20 +1,4 @@
 {
-  "version": 2,
-  "buildCommand": "node scripts/inject-env.js",
-  "outputDirectory": "public",
-  "framework": null,
   "cleanUrls": true,
-  "rewrites": [
-    { "source": "/admin", "destination": "/admin.html" },
-    { "source": "/", "destination": "/index.html" }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
-      ]
-    }
-  ]
+  "trailingSlash": false
 }
