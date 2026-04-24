@@ -50,6 +50,7 @@ const state = {
   signedInGroupId: null,
   signedInPlayerId: null,
   isAdmin: false,
+  loaded: false,          // true after first loadAll() completes (even with no tournament)
 };
 const listeners = new Set();
 const notify = () => listeners.forEach((fn) => { try { fn(state); } catch (e) { console.error(e); } });
@@ -59,7 +60,7 @@ async function loadAll() {
   // 1. Find the live tournament
   const { data: appState } = await client.from('app_state').select('live_tournament_id').maybeSingle();
   const tid = appState?.live_tournament_id;
-  if (!tid) { state.tournament = null; notify(); return; }
+  if (!tid) { state.tournament = null; state.loaded = true; notify(); return; }
 
   const [{ data: t }, { data: groups }, { data: players }, { data: scores }] = await Promise.all([
     client.from('tournaments').select('*').eq('id', tid).single(),
@@ -78,6 +79,7 @@ async function loadAll() {
     const row = state.scoresByPlayer[s.player_id];
     if (row) row[s.hole - 1] = s.strokes;
   }
+  state.loaded = true;
   notify();
 }
 

@@ -439,8 +439,9 @@ function TournamentProvider({ children }) {
     const connect = () => {
       if (!window.golfData) return;
       unsub = window.golfData.subscribe((state) => {
-        if (!state.players || !state.tournament) return;
+        if (!state.loaded) return;
         setConnectionStatus('connected');
+        if (!state.tournament) return;
         // Build UUID → number lookup for groups
         const gMap = {};
         const mappedGroups = {};
