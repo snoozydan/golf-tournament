@@ -1226,19 +1226,19 @@ function Archive() {
 // which player in the group is them (for the Scorecard tab).
 function SignIn() {
   const { players, groups, signInWithCode, choosePlayer } = useT();
-  const [code, setCode] = React.useState(‘’);
+  const [code, setCode] = React.useState('');
   const [matchedGroup, setMatchedGroup] = React.useState(null);
-  const [err, setErr] = React.useState(‘’);
+  const [err, setErr] = React.useState('');
   const [loading, setLoading] = React.useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
-    setLoading(true); setErr(‘’);
+    setLoading(true); setErr('');
     try {
       const gid = await signInWithCode(code);
       setMatchedGroup(gid);
     } catch {
-      setErr(‘Code not recognized. Ask your organizer for this group\u2019s 4-character code.’);
+      setErr('Code not recognized. Ask your organizer for this group\u2019s 4-character code.');
     } finally {
       setLoading(false);
     }
@@ -1246,7 +1246,7 @@ function SignIn() {
 
   const chooseMe = (pid) => {
     choosePlayer(pid);
-    location.hash = ‘#/home’;
+    location.hash = '#/home';
   };
 
   // Step 2: pick which player in the group is you
@@ -1281,7 +1281,7 @@ function SignIn() {
   return (
     <div className="route pad" style={{ paddingTop: 24 }}>
       <div className="rise"><div className="h-page">Sign in<span className="accent">.</span></div></div>
-      <div className="mute" style={{ fontSize: 13, marginTop: 10, marginBottom: 24 }}>Enter your group’s 4-character code to score your round. Any player in the group can score for everyone.</div>
+      <div className="mute" style={{ fontSize: 13, marginTop: 10, marginBottom: 24 }}>Enter your group's 4-character code to score your round. Any player in the group can score for everyone.</div>
       <form onSubmit={submit}>
         <label className="sr" htmlFor="code">Group code</label>
         <input id="code" className="input" placeholder="E.g. GF2P" maxLength={4} value={code} onChange={e => { setCode(e.target.value); setErr(''); }} autoFocus autoComplete="off" spellCheck="false" />
