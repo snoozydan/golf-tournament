@@ -184,5 +184,11 @@ window.golfData = {
   client, // escape hatch for admin dashboard CRUD
 };
 
-// Boot
-loadAll().then(wireRealtime).catch((e) => console.error('Golf data boot failed:', e));
+// Let React components know golfData is ready (module scripts run deferred)
+window.dispatchEvent(new CustomEvent('golfDataReady'));
+
+// Boot — dispatch golfDataError if the initial load fails so the UI can show an error
+loadAll().then(wireRealtime).catch((e) => {
+  console.error('Golf data boot failed:', e);
+  window.dispatchEvent(new CustomEvent('golfDataError', { detail: e?.message || 'Connection failed' }));
+});

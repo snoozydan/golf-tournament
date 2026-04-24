@@ -336,6 +336,8 @@
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<!-- Supabase data layer — only active when SUPABASE env vars are set -->
+<script type="module" src="/web/data.js"></script>
 </head>
 <body>
 <div id="root"></div>
@@ -414,6 +416,7 @@ function scoreCellClass(s, par) {
 const TCtx = React.createContext(null);
 function TournamentProvider({ children }) {
   const [players, setPlayers] = React.useState(buildPlayers);
+  const [groups, setGroups] = React.useState(GROUPS);
   const [activePlayerId, setActivePlayerId] = React.useState('jk');
   const [activeGroupId, setActiveGroupId] = React.useState(2);
   const [currentHole, setCurrentHole] = React.useState(INITIAL_HOLES + 1);
@@ -421,6 +424,67 @@ function TournamentProvider({ children }) {
   // Public visitors are NOT signed in by default. Board + Archive remain fully accessible;
   // Score entry + Scorecard require signing in with a group code.
   const [signedIn, setSignedIn] = React.useState(false);
+  // 'demo' | 'connecting' | 'connected' | 'error'
+  const [connectionStatus, setConnectionStatus] = React.useState(
+    window.__SUPABASE_URL__ ? 'connecting' : 'demo'
+  );
+  // Map Supabase UUID group ids → numeric group numbers used by components
+  const groupIdMap = React.useRef({});
+
+  // Subscribe to the Supabase data layer when it becomes available.
+  // connectionStatus tracks the real state so errors are never silent.
+  React.useEffect(() => {
+    if (!window.__SUPABASE_URL__) return; // intentional demo mode, no connection attempted
+    let unsub;
+    const connect = () => {
+      if (!window.golfData) return;
+      unsub = window.golfData.subscribe((state) => {
+        if (!state.players || !state.tournament) return;
+        setConnectionStatus('connected');
+        // Build UUID → number lookup for groups
+        const gMap = {};
+        const mappedGroups = {};
+        for (const g of state.groups) {
+          gMap[g.id] = g.number;
+          mappedGroups[g.number] = { code: g.code, tee: g.tee_time };
+        }
+        groupIdMap.current = gMap;
+        // Convert Supabase player shape to the shape components already consume
+        const mappedPlayers = state.players.map(p => ({
+          id: p.id, name: p.name,
+          group: gMap[p.group_id] ?? 1,
+          hcp: p.handicap,
+          scores: state.scoresByPlayer[p.id] || Array(18).fill(null),
+        }));
+        setPlayers(mappedPlayers);
+        if (Object.keys(mappedGroups).length > 0) setGroups(mappedGroups);
+        // Restore sign-in state from sessionStorage via golfData
+        if (state.signedInGroupId) {
+          const gNum = gMap[state.signedInGroupId];
+          if (gNum != null) { setActiveGroupId(gNum); setSignedIn(true); }
+        }
+        if (state.signedInPlayerId) setActivePlayerId(state.signedInPlayerId);
+      });
+    };
+    const onError = (e) => setConnectionStatus('error:' + (e.detail || 'unknown'));
+    window.addEventListener('golfDataError', onError);
+    // If still 'connecting' after 12 s, flag it — don't silently stay on demo data
+    const timeout = setTimeout(() => {
+      setConnectionStatus(s => s === 'connecting' ? 'error:timeout' : s);
+    }, 12000);
+
+    if (window.golfData) {
+      connect();
+    } else {
+      window.addEventListener('golfDataReady', connect, { once: true });
+    }
+    return () => {
+      if (unsub) unsub();
+      clearTimeout(timeout);
+      window.removeEventListener('golfDataReady', connect);
+      window.removeEventListener('golfDataError', onError);
+    };
+  }, []);
 
   const setScore = React.useCallback((pid, idx, val) => {
     setPlayers(prev => prev.map(p => {
@@ -430,6 +494,35 @@ function TournamentProvider({ children }) {
     }));
     setPulseId(pid);
     setTimeout(() => setPulseId(c => c === pid ? null : c), 1400);
+    // Persist to Supabase when connected (hole number is 1-based)
+    if (window.golfData) {
+      window.golfData.writeScore(pid, idx + 1, val)
+        .catch(err => console.error('Score write failed:', err));
+    }
+  }, []);
+
+  // Sign-in: calls the Supabase edge function when connected, otherwise matches
+  // against the in-memory GROUPS demo codes.
+  const signInWithCode = React.useCallback(async (code) => {
+    if (window.golfData) {
+      const group_id = await window.golfData.signInWithCode(code);
+      const gNum = groupIdMap.current[group_id];
+      if (gNum == null) throw new Error('Group not found');
+      setActiveGroupId(gNum);
+      return gNum;
+    }
+    const upper = code.toUpperCase().trim();
+    const entry = Object.entries(groups).find(([, g]) => g.code.toUpperCase() === upper);
+    if (!entry) throw new Error('Code not recognized');
+    setActiveGroupId(+entry[0]);
+    return +entry[0];
+  }, [groups]);
+
+  // After code sign-in, player identifies themselves; persisted in sessionStorage
+  const choosePlayer = React.useCallback((pid) => {
+    setActivePlayerId(pid);
+    setSignedIn(true);
+    if (window.golfData) window.golfData.setSignedInPlayer(pid);
   }, []);
 
   const leaderboard = React.useMemo(() => {
@@ -460,11 +553,38 @@ function TournamentProvider({ children }) {
       activeGroupId, setActiveGroupId,
       currentHole, setCurrentHole,
       signedIn, setSignedIn,
-      groups: GROUPS,
+      groups,
+      signInWithCode,
+      choosePlayer,
+      connectionStatus,
     }}>{children}</TCtx.Provider>
   );
 }
 const useT = () => React.useContext(TCtx);
+
+// ─────── CONNECTION BANNER ───────
+// Visible stripe at the top of the page so you always know whether the app
+// is running against live Supabase data or the built-in demo data.
+function ConnectionBanner() {
+  const { connectionStatus } = useT();
+  if (connectionStatus === 'connected') return null; // silent when all is well
+  const isError = connectionStatus.startsWith('error');
+  const isDemo  = connectionStatus === 'demo';
+  const label   = isDemo        ? 'Demo mode — no Supabase env vars set'
+                : isError       ? `Supabase error: ${connectionStatus.replace('error:', '')} — check env vars`
+                :                 'Connecting to Supabase…';
+  const bg      = isDemo ? '#6B6B65' : isError ? '#B22222' : '#FF8C00';
+  return (
+    <div style={{
+      background: bg, color: '#fff',
+      fontFamily: 'var(--f-head)', fontSize: 11, fontWeight: 700,
+      letterSpacing: 0.8, textAlign: 'center',
+      padding: '6px 16px', position: 'sticky', top: 0, zIndex: 60,
+    }}>
+      {label}
+    </div>
+  );
+}
 
 // ─────── ROUTING ───────
 // Public hash router. Board + Archive are fully public.
@@ -1105,28 +1225,28 @@ function Archive() {
 // once in, they can score for everyone in their foursome. We then prompt them to pick
 // which player in the group is them (for the Scorecard tab).
 function SignIn() {
-  const { players, groups, setActivePlayerId, setActiveGroupId, setSignedIn } = useT();
-  const [code, setCode] = React.useState('');
+  const { players, groups, signInWithCode, choosePlayer } = useT();
+  const [code, setCode] = React.useState(‘’);
   const [matchedGroup, setMatchedGroup] = React.useState(null);
-  const [err, setErr] = React.useState('');
+  const [err, setErr] = React.useState(‘’);
+  const [loading, setLoading] = React.useState(false);
 
-  // Normalize code lookup
-  const groupByCode = Object.entries(groups).reduce((acc, [gid, g]) => {
-    acc[g.code.toUpperCase()] = +gid; return acc;
-  }, {});
-
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    const gid = groupByCode[code.toUpperCase().trim()];
-    if (!gid) { setErr('Code not recognized. Ask your organizer for this group’s 4-character code.'); return; }
-    setMatchedGroup(gid);
-    setActiveGroupId(gid);
+    setLoading(true); setErr(‘’);
+    try {
+      const gid = await signInWithCode(code);
+      setMatchedGroup(gid);
+    } catch {
+      setErr(‘Code not recognized. Ask your organizer for this group\u2019s 4-character code.’);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const chooseMe = (pid) => {
-    setActivePlayerId(pid);
-    setSignedIn(true);
-    location.hash = '#/home';
+    choosePlayer(pid);
+    location.hash = ‘#/home’;
   };
 
   // Step 2: pick which player in the group is you
@@ -1166,7 +1286,7 @@ function SignIn() {
         <label className="sr" htmlFor="code">Group code</label>
         <input id="code" className="input" placeholder="E.g. GF2P" maxLength={4} value={code} onChange={e => { setCode(e.target.value); setErr(''); }} autoFocus autoComplete="off" spellCheck="false" />
         {err && <div style={{ color: 'var(--bad)', fontSize: 12, marginTop: 10 }}>{err}</div>}
-        <button type="submit" className="btn" style={{ marginTop: 16 }}>Continue →</button>
+        <button type="submit" className="btn" style={{ marginTop: 16 }} disabled={loading}>{loading ? 'Checking…' : 'Continue →'}</button>
       </form>
       <div className="mute" style={{ fontSize: 11, marginTop: 22, lineHeight: 1.5 }}>
         Demo codes: <b>GF2P</b> · <b>MK7A</b> · <b>RB9X</b> · <b>QN4H</b>
@@ -1185,6 +1305,7 @@ function App() {
   return (
     <TournamentProvider>
       <div className="app">
+        <ConnectionBanner />
         <Sidebar route={route === 'signin' ? 'home' : route} go={go} />
         <TopBar />
         <main>

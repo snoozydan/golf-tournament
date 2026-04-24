@@ -180,6 +180,8 @@
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<!-- Supabase data layer — only active when SUPABASE env vars are set -->
+<script type="module" src="/web/data.js"></script>
 </head>
 <body>
 <div id="root"></div>
@@ -243,6 +245,32 @@ const sumPosted = (p) => p.scores.reduce((a,s) => a + (s ?? 0), 0);
 const grossRel = (p, pars) => sumPosted(p) - parThru(pars, holesPlayed(p));
 const fmtRel = r => r === 0 ? 'E' : r > 0 ? `+${r}` : `${r}`;
 
+// ─── HELPERS ───
+const isUUID = (id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id));
+
+// Map a Supabase tournament row (with embedded groups + players) to admin local shape.
+function mapTournament(t) {
+  const gMap = {}; // UUID → number
+  for (const g of (t.groups || [])) gMap[g.id] = g.number;
+  return {
+    id: t.id,
+    name: t.name,
+    course: t.course_name,
+    status: t.status,
+    liveRound: t.live_round,
+    purse: t.purse,
+    scoringModel: t.scoring_model,
+    groups: (t.groups || []).map(g => ({ id: g.number, teeTime: g.tee_time || '', code: g.code, _uuid: g.id })),
+    players: (t.players || []).map(p => ({
+      id: p.id, name: p.name, code: p.id.slice(0, 8).toUpperCase(),
+      group: gMap[p.group_id] ?? 1, hcp: p.handicap, winnings: p.winnings || 0,
+      scores: new Array(18).fill(null),
+    })),
+    course_pars: t.course_pars, course_yards: t.course_yards,
+    course_hcp: t.course_hcp, course_holeNames: t.course_hole_names,
+  };
+}
+
 // ─── CONTEXT ───
 const TCtx = React.createContext(null);
 function Provider({ children }) {
@@ -252,6 +280,7 @@ function Provider({ children }) {
   const [liveId, setLiveId] = React.useState('t1');
   const [dirty, setDirty] = React.useState(false);
   const [toast, setToast] = React.useState(null);
+  const sbMode = !!window.__SUPABASE_URL__;
 
   const active = tournaments.find(t => t.id === activeId) || tournaments[0];
   const updateActive = React.useCallback((fn) => {
@@ -259,18 +288,127 @@ function Provider({ children }) {
     setDirty(true);
   }, [activeId]);
 
-  const save = () => {
-    setDirty(false);
-    setToast({ kind: 'ok', msg: 'Saved' });
-    setTimeout(() => setToast(null), 1800);
+  // ── Load from Supabase ──────────────────────────────────────────────────────
+  const loadFromSupabase = React.useCallback(async () => {
+    const gd = window.golfData;
+    if (!gd || !sbMode) return;
+    try {
+      const [{ data: ts, error: tErr }, { data: appSt }] = await Promise.all([
+        gd.client.from('tournaments').select('*, groups(*), players(*)').order('created_at', { ascending: false }),
+        gd.client.from('app_state').select('live_tournament_id').maybeSingle(),
+      ]);
+      if (tErr) { console.error('Supabase load error:', tErr); return; }
+      if (!ts || ts.length === 0) return;
+
+      const mapped = ts.map(mapTournament);
+
+      // Load scores for all players across all tournaments
+      const playerIds = mapped.flatMap(t => t.players.map(p => p.id));
+      if (playerIds.length > 0) {
+        const { data: scores } = await gd.client.from('scores').select('player_id,hole,strokes').in('player_id', playerIds);
+        for (const s of (scores || [])) {
+          for (const t of mapped) {
+            const p = t.players.find(p => p.id === s.player_id);
+            if (p) p.scores[s.hole - 1] = s.strokes;
+          }
+        }
+      }
+
+      setTournaments(mapped);
+      setActiveId(mapped[0].id);
+      if (appSt?.live_tournament_id) setLiveId(appSt.live_tournament_id);
+    } catch (e) { console.error('loadFromSupabase failed:', e); }
+  }, [sbMode]);
+
+  // Run once on mount (and again after sign-in)
+  React.useEffect(() => {
+    const go = () => loadFromSupabase();
+    if (window.golfData) go();
+    else window.addEventListener('golfDataReady', go, { once: true });
+    return () => window.removeEventListener('golfDataReady', go);
+  }, [loadFromSupabase]);
+
+  React.useEffect(() => { if (authed) loadFromSupabase(); }, [authed]);
+
+  // ── Save to Supabase ────────────────────────────────────────────────────────
+  const save = async () => {
+    if (!sbMode) {
+      setDirty(false);
+      setToast({ kind: 'ok', msg: 'Saved (demo — no Supabase)' });
+      setTimeout(() => setToast(null), 2000);
+      return;
+    }
+    const gd = window.golfData;
+    if (!gd) return;
+    try {
+      // 1. Upsert tournament
+      const tPayload = {
+        name: active.name, course_name: active.course, status: active.status,
+        live_round: active.liveRound, purse: active.purse, scoring_model: active.scoringModel,
+        course_pars: active.course_pars, course_yards: active.course_yards,
+        course_hcp: active.course_hcp, course_hole_names: active.course_holeNames,
+      };
+      if (isUUID(active.id)) tPayload.id = active.id;
+      const { data: tRow, error: tErr } = await gd.client.from('tournaments').upsert(tPayload).select('id').single();
+      if (tErr) throw tErr;
+      const tid = tRow.id;
+
+      // 2. Upsert groups
+      const groupUUIDs = {}; // number → UUID
+      for (const g of active.groups) {
+        const gPayload = { tournament_id: tid, number: g.id, tee_time: g.teeTime, code: g.code };
+        if (g._uuid) gPayload.id = g._uuid;
+        const { data: gRow, error: gErr } = await gd.client.from('groups').upsert(gPayload, { onConflict: 'tournament_id,number' }).select('id').single();
+        if (gErr) throw gErr;
+        groupUUIDs[g.id] = gRow.id;
+      }
+
+      // 3. Upsert players + scores
+      for (const p of active.players) {
+        const pPayload = {
+          tournament_id: tid, group_id: groupUUIDs[p.group] || null,
+          name: p.name, handicap: p.hcp, winnings: p.winnings || 0,
+        };
+        if (isUUID(p.id)) pPayload.id = p.id;
+        const { data: pRow, error: pErr } = await gd.client.from('players').upsert(pPayload).select('id').single();
+        if (pErr) throw pErr;
+        const pid = pRow.id;
+
+        const scoreRows = p.scores.map((s, i) => s != null ? { player_id: pid, hole: i + 1, strokes: s } : null).filter(Boolean);
+        if (scoreRows.length > 0) {
+          const { error: sErr } = await gd.client.from('scores').upsert(scoreRows, { onConflict: 'player_id,hole' });
+          if (sErr) throw sErr;
+        }
+      }
+
+      // Reload so local state reflects Supabase-generated UUIDs
+      await loadFromSupabase();
+      setDirty(false);
+      setToast({ kind: 'ok', msg: 'Saved to Supabase' });
+      setTimeout(() => setToast(null), 2000);
+    } catch (e) {
+      console.error('Save failed:', e);
+      setToast({ kind: 'err', msg: 'Save failed: ' + (e.message || e.code || 'check console') });
+      setTimeout(() => setToast(null), 5000);
+    }
   };
-  const discard = () => {
-    // Note: in a real app we'd revert to a snapshot; here we just clear the dirty flag
-    setDirty(false);
+
+  const discard = () => { setDirty(false); loadFromSupabase(); };
+
+  // ── Set live tournament ─────────────────────────────────────────────────────
+  const setLiveTournament = async (id) => {
+    setLiveId(id);
+    const gd = window.golfData;
+    if (!gd || !sbMode || !isUUID(id)) return;
+    await gd.client.from('app_state').upsert({ id: 1, live_tournament_id: id }).catch(console.error);
   };
 
   return (
-    <TCtx.Provider value={{ authed, setAuthed, tournaments, setTournaments, activeId, setActiveId, liveId, setLiveId, active, updateActive, dirty, setDirty, save, discard, toast, setToast }}>
+    <TCtx.Provider value={{
+      authed, setAuthed, tournaments, setTournaments,
+      activeId, setActiveId, liveId, setLiveId: setLiveTournament,
+      active, updateActive, dirty, setDirty, save, discard, toast, setToast, sbMode,
+    }}>
       {children}
     </TCtx.Provider>
   );
@@ -310,27 +448,66 @@ const I = {
 
 // ─── SIGN-IN ───
 function SignIn() {
-  const { setAuthed } = useT();
-  const [code, setCode] = React.useState('');
-  const [err, setErr] = React.useState('');
-  const submit = (e) => {
+  const { setAuthed, sbMode } = useT();
+  const [email, setEmail]     = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [code, setCode]       = React.useState('');
+  const [err, setErr]         = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+
+  const submitSupabase = async (e) => {
+    e.preventDefault();
+    setLoading(true); setErr('');
+    try {
+      await window.golfData.signInAdmin(email, password);
+      setAuthed(true);
+    } catch (ex) {
+      setErr(ex.message || 'Sign-in failed. Check email and password.');
+    } finally { setLoading(false); }
+  };
+
+  const submitDemo = (e) => {
     e.preventDefault();
     if (code.trim().toUpperCase() === ADMIN_CODE) setAuthed(true);
     else setErr('Incorrect admin code. Try: ADMIN');
   };
+
   return (
     <div className="signin-wrap">
       <div style={{ fontFamily: 'var(--f-head)', fontSize: 10, fontWeight: 700, letterSpacing: 2, color: 'var(--mute)', textTransform: 'uppercase' }}>Admin access</div>
       <div style={{ fontFamily: 'var(--f-head)', fontWeight: 700, fontSize: 52, letterSpacing: -0.03 * 52, lineHeight: 0.95, marginTop: 12 }}>Lock<span style={{ color: 'var(--accent)' }}>.</span><br/>screen<span style={{ color: 'var(--accent)' }}>.</span></div>
-      <div className="mute" style={{ fontSize: 13, marginTop: 12, marginBottom: 26, maxWidth: 280 }}>Enter the admin code to manage tournaments, players, groups, and scoring.</div>
-      <form onSubmit={submit}>
-        <label className="input-label" htmlFor="code">Admin code</label>
-        <input id="code" className="input" style={{ letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600, fontSize: 18 }}
-          placeholder="•••••" value={code} onChange={e => { setCode(e.target.value); setErr(''); }} autoFocus autoComplete="off" />
-        {err && <div style={{ color: 'var(--bad)', fontSize: 12, marginTop: 10, fontWeight: 500 }}>{err}</div>}
-        <button type="submit" className="btn" style={{ marginTop: 18 }}>Unlock →</button>
-      </form>
-      <div className="mute" style={{ fontSize: 11, marginTop: 28, lineHeight: 1.5 }}>Demo code: <span className="kbd">ADMIN</span><br/><a href="index.html" style={{ color: 'var(--accent)', fontWeight: 600 }}>← Back to public site</a></div>
+      <div className="mute" style={{ fontSize: 13, marginTop: 12, marginBottom: 26, maxWidth: 280 }}>
+        {sbMode ? 'Sign in with your Supabase admin account.' : 'Enter the demo admin code.'}
+      </div>
+
+      {sbMode ? (
+        <form onSubmit={submitSupabase}>
+          <div className="field"><label className="input-label" htmlFor="email">Email</label>
+            <input id="email" className="input" type="email" placeholder="admin@example.com"
+              value={email} onChange={e => { setEmail(e.target.value); setErr(''); }} autoFocus autoComplete="email" />
+          </div>
+          <div className="field"><label className="input-label" htmlFor="pw">Password</label>
+            <input id="pw" className="input" type="password" placeholder="••••••••"
+              value={password} onChange={e => { setPassword(e.target.value); setErr(''); }} autoComplete="current-password" />
+          </div>
+          {err && <div style={{ color: 'var(--bad)', fontSize: 12, marginTop: 10, fontWeight: 500 }}>{err}</div>}
+          <button type="submit" className="btn" style={{ marginTop: 18 }} disabled={loading}>{loading ? 'Signing in…' : 'Unlock →'}</button>
+          <div className="mute" style={{ fontSize: 11, marginTop: 16, lineHeight: 1.6 }}>
+            Need an account? In Supabase dashboard → Authentication → Users → Add user,
+            then set Raw User Meta Data to <span className="kbd">{`{"role":"admin"}`}</span>.
+          </div>
+        </form>
+      ) : (
+        <form onSubmit={submitDemo}>
+          <label className="input-label" htmlFor="code">Admin code</label>
+          <input id="code" className="input" style={{ letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600, fontSize: 18 }}
+            placeholder="•••••" value={code} onChange={e => { setCode(e.target.value); setErr(''); }} autoFocus autoComplete="off" />
+          {err && <div style={{ color: 'var(--bad)', fontSize: 12, marginTop: 10, fontWeight: 500 }}>{err}</div>}
+          <button type="submit" className="btn" style={{ marginTop: 18 }}>Unlock →</button>
+          <div className="mute" style={{ fontSize: 11, marginTop: 28, lineHeight: 1.5 }}>Demo code: <span className="kbd">ADMIN</span></div>
+        </form>
+      )}
+      <div className="mute" style={{ fontSize: 11, marginTop: 16 }}><a href="index.html" style={{ color: 'var(--accent)', fontWeight: 600 }}>← Back to public site</a></div>
     </div>
   );
 }
@@ -974,20 +1151,23 @@ function Settings() {
 // ─── ACTION BAR + TOAST ───
 function ActionBar() {
   const { dirty, save, discard, toast } = useT();
+  const [saving, setSaving] = React.useState(false);
   if (!dirty && !toast) return null;
+  const isErr = toast?.kind === 'err';
+  const handleSave = async () => { setSaving(true); await save(); setSaving(false); };
   return (
     <div className="action-bar">
-      <div className="inner">
+      <div className="inner" style={isErr ? { background: 'var(--bad)' } : {}}>
         {toast ? (
           <>
-            <span style={{ width: 22, height: 22, borderRadius: 99, background: 'var(--good)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>{I.check}</span>
-            <div className="msg">Saved <small>All changes synced</small></div>
+            <span style={{ width: 22, height: 22, borderRadius: 99, background: isErr ? 'rgba(255,255,255,0.2)' : 'var(--good)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>{isErr ? '!' : I.check}</span>
+            <div className="msg">{toast.msg}</div>
           </>
         ) : (
           <>
             <div className="msg">Unsaved changes <small>Remember to save</small></div>
             <button className="discard" onClick={discard}>Discard</button>
-            <button onClick={save}>Save</button>
+            <button onClick={handleSave} disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
           </>
         )}
       </div>
